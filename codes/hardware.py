@@ -8,6 +8,12 @@ class HardWare():
     vj = None
     vk = None
 
+    def free(self):
+        op = None
+        status = None
+        vj = None
+        vk = None
+
 
 class Adder(HardWare):
 
@@ -52,14 +58,14 @@ class Loader(HardWare):
             return None
 
 
-Add = []
+Add = {}
 for i in range(Config.ADDER):
-    Add.append(Adder(i))
+    Add['Add'+str(i)] = Adder(i)
 
-Mult = []
+Mult = {}
 for i in range(Config.MULTER):
-    Mult.append(Multer(i))
+    Mult['Mult'+str(i)] = Multer(i)
 
-Load = []
+Load = {}
 for i in range(Config.LOADER):
-    Load.append(Loader(i))
+    Load['Load'+str(i)] = Loader(i)

@@ -13,16 +13,16 @@ class tomasulo():
         self.PC = 0
         self.inst = []
         self.RS = RS()
-        self.register = []
+        self.register = {}
         for i in range(Config.RIGISTER):
-            self.register.append(Register(i))
+            self.register['F'+str(i)] = Register(i)
         print ("tomasulo!")
 
     def __repr__(self):
         for inst in self.inst:
             print (inst)
         print (self.RS)
-        for register in self.register:
+        for register in self.register.values():
             print (register)
         return 'PC: %r' % self.PC
 
@@ -38,59 +38,81 @@ class tomasulo():
             if res is not None:
                 print ('%s free to go!' % inst.content)
                 inst.Issue = self.clock
-                #self.RS.fire(inst, res)
 
                 if inst.op == Config.OP_LD:
                     self.RS.LB[res].busy = True
                     self.RS.LB[res].op = inst.op
+                    self.RS.LB[res].inst = self.PC
                     self.RS.LB[res].im = inst.rgst_int[-1]
-                    self.findRegister(inst.rgst_int[-2]).status = self.RS.LB[res].name
+                    self.register[inst.rgst_int[-2]].status = self.RS.LB[res].name
                 elif inst.op == Config.OP_ADD or inst.op == Config.OP_SUB:
                     self.RS.ARS[res].busy = True
                     self.RS.ARS[res].op = inst.op
-                    if self.findRegister(inst.rgst_int[-2]).status:
-                        self.RS.ARS[res].qj = self.findRegister(inst.rgst_int[-2]).status
+                    self.RS.ARS[res].inst = self.PC
+                    if self.register[inst.rgst_int[-2]].status:
+                        self.RS.ARS[res].qj = self.register[inst.rgst_int[-2]].status
                     else:
-                        self.RS.ARS[res].vj = self.findRegister(inst.rgst_int[-2]).value
+                        self.RS.ARS[res].vj = self.register[inst.rgst_int[-2]].value
 
-                    if self.findRegister(inst.rgst_int[-1]).status:
-                        self.RS.ARS[res].qk = self.findRegister(inst.rgst_int[-1]).status
+                    if self.register[inst.rgst_int[-1]].status:
+                        self.RS.ARS[res].qk = self.register[inst.rgst_int[-1]].status
                     else:
-                        self.RS.ARS[res].vk = self.findRegister(inst.rgst_int[-1]).value
+                        self.RS.ARS[res].vk = self.register[inst.rgst_int[-1]].value
 
-                    self.findRegister(inst.rgst_int[-3]).status = self.RS.ARS[res].name
+                    self.register[inst.rgst_int[-3]].status = self.RS.ARS[res].name
                 elif inst.op == Config.OP_MUL or inst.op == Config.OP_DIV:
                     self.RS.MRS[res].busy = True
                     self.RS.MRS[res].op = inst.op
-                    if self.findRegister(inst.rgst_int[-2]).status:
-                        self.RS.MRS[res].qj = self.findRegister(inst.rgst_int[-2]).status
+                    self.RS.MRS[res].inst = self.PC
+                    if self.register[inst.rgst_int[-2]].status:
+                        self.RS.MRS[res].qj = self.register[inst.rgst_int[-2]].status
                     else:
-                        self.RS.MRS[res].vj = self.findRegister(inst.rgst_int[-2]).value
+                        self.RS.MRS[res].vj = self.register[inst.rgst_int[-2]].value
 
-                    if self.findRegister(inst.rgst_int[-1]).status:
-                        self.RS.MRS[res].qk = self.findRegister(inst.rgst_int[-1]).status
+                    if self.register[inst.rgst_int[-1]].status:
+                        self.RS.MRS[res].qk = self.register[inst.rgst_int[-1]].status
                     else:
-                        self.RS.MRS[res].vk = self.findRegister(inst.rgst_int[-1]).value
+                        self.RS.MRS[res].vk = self.register[inst.rgst_int[-1]].value
 
-                    self.findRegister(inst.rgst_int[-3]).status = self.RS.MRS[res].name
+                    self.register[inst.rgst_int[-3]].status = self.RS.MRS[res].name
                 elif inst.op == Config.OP_JUMP:
                     pass
                 else:
                     return None
                 self.PC += 1
             else:
-                print ('no')
+                print ('no free RS!')
 
             #EXCUTE
+            for LB in self.RS.LB.values():
+                if LB.remain is not None:
+                    LB.remain -= 1
+                    if LB.remain == 0:
+                        self.inst[LB.inst].ExecComp = self.clock
+                        Load[LB.FU].free()
+
+            for ARS in self.RS.ARS.values():
+                if ARS.remain is not None:
+                    ARS.remain -= 1
+                    if ARS.remain == 0:
+                        self.inst[ARS.inst].ExecComp = self.clock
+                        Add[ARS.FU].free()
+
+            for MRS in self.RS.MRS.values():
+                if MRS.remain is not None:
+                    MRS.remain -= 1
+                    if MRS.remain == 0:
+                        self.inst[MRS.inst].ExecComp = self.clock
+                        Mult[MRS.FU].free()
+
+            for LB in self.RS.LB.values():
+                if LB.FU is None:
+                    for loader in Load.values():
+                        pass
 
             #WRITEBACK
 
             n -= 1
-
-    def findRegister(self, str):
-        for register in self.register:
-            if register.name == str:
-                return register
 
 
 if __name__ == '__main__':
