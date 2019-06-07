@@ -8,7 +8,6 @@ from hardware import Add, Mult, Load
 class tomasulo():
 
     def __init__(self):
-        self.memory = [0] * Config.MEMORY
         self.clock = 0
         self.PC = 0
         self.inst = []
@@ -29,11 +28,85 @@ class tomasulo():
     def insert_inst(self, inst):
         self.inst.append(Instruction(inst.strip()))
 
+    def reset(self):
+        self.clock = 0
+        self.PC = 0
+        for LB in self.RS.LB.values():
+            LB.free()
+        for ARS in self.RS.ARS.values():
+            ARS.free()
+        for MRS in self.RS.MRS.values():
+            MRS.free()
+
+        for register in self.register.values():
+            register.free()
+
+        for loader in Load.values():
+            loader.free()
+        for adder in Add.values():
+            adder.free()
+        for multer in Mult.values():
+            multer.free()
+
     def step(self, n):
         while n > 0:
             self.clock += 1
-            inst = self.inst[self.PC]
+
+            #WRITEBACK
+            for LB in self.RS.LB.values():
+                if LB.busy is True and LB.remain == 0:
+                    self.inst[LB.inst].WriteResult = self.clock
+                    for register in self.register.values():
+                        if register.status == LB.name:
+                            register.status = None
+                            register.value = LB.im
+                    self.RS.write(LB.name, LB.im)
+                    LB.free()
+
+            for ARS in self.RS.ARS.values():
+                if ARS.busy is True and ARS.remain == 0:
+                    self.inst[ARS.inst].WriteResult = self.clock
+                    for register in self.register.values():
+                        if register.status == ARS.name:
+                            register.status = None
+                            register.value = ARS.result()
+                    self.RS.write(ARS.name, ARS.result())
+                    ARS.free()
+
+            for MRS in self.RS.MRS.values():
+                if MRS.busy is True and MRS.remain == 0:
+                    self.inst[MRS.inst].WriteResult = self.clock
+                    for register in self.register.values():
+                        if register.status == MRS.name:
+                            register.status = None
+                            register.value = MRS.result()
+                    self.RS.write(MRS.name, MRS.result())
+                    MRS.free()
+
+            #EXCUTE
+            for LB in self.RS.LB.values():
+                if LB.busy is True and LB.remain is not None:
+                    LB.remain -= 1
+                    if LB.remain == 0:
+                        self.inst[LB.inst].ExecComp = self.clock
+                        Load[LB.FU].free()
+
+            for ARS in self.RS.ARS.values():
+                if ARS.busy is True and ARS.remain is not None:
+                    ARS.remain -= 1
+                    if ARS.remain == 0:
+                        self.inst[ARS.inst].ExecComp = self.clock
+                        Add[ARS.FU].free()
+
+            for MRS in self.RS.MRS.values():
+                if MRS.busy is True and MRS.remain is not None:
+                    MRS.remain -= 1
+                    if MRS.remain == 0:
+                        self.inst[MRS.inst].ExecComp = self.clock
+                        Mult[MRS.FU].free()
+
             #ISSUE
+            inst = self.inst[self.PC]
             res = self.RS.busy(inst)
             if res is not None:
                 print ('%s free to go!' % inst.content)
@@ -83,34 +156,41 @@ class tomasulo():
             else:
                 print ('no free RS!')
 
-            #EXCUTE
+            #EXCUTE HardWare
             for LB in self.RS.LB.values():
-                if LB.remain is not None:
-                    LB.remain -= 1
-                    if LB.remain == 0:
-                        self.inst[LB.inst].ExecComp = self.clock
-                        Load[LB.FU].free()
+                if LB.busy is True and LB.FU is None:
+                    for loader in Load.values():
+                        if loader.status is None:
+                            loader.op =  self.inst[LB.inst].op
+                            loader.status = LB.name
+                            loader.vj = LB.im
+                            LB.remain = Config.TIME[loader.op]
+                            LB.FU = loader.name
+                            break
 
             for ARS in self.RS.ARS.values():
-                if ARS.remain is not None:
-                    ARS.remain -= 1
-                    if ARS.remain == 0:
-                        self.inst[ARS.inst].ExecComp = self.clock
-                        Add[ARS.FU].free()
+                if ARS.busy is True and ARS.FU is None and ARS.vj is not None and ARS.vk is not None:
+                    for adder in Add.values():
+                        if adder.status is None:
+                            adder.op =  self.inst[ARS.inst].op
+                            adder.status = ARS.name
+                            adder.vj = ARS.vj
+                            adder.vk = ARS.vk
+                            ARS.remain = Config.TIME[adder.op]
+                            ARS.FU = adder.name
+                            break
 
             for MRS in self.RS.MRS.values():
-                if MRS.remain is not None:
-                    MRS.remain -= 1
-                    if MRS.remain == 0:
-                        self.inst[MRS.inst].ExecComp = self.clock
-                        Mult[MRS.FU].free()
-
-            for LB in self.RS.LB.values():
-                if LB.FU is None:
-                    for loader in Load.values():
-                        pass
-
-            #WRITEBACK
+                if MRS.busy is True and MRS.FU is None and MRS.vj is not None and MRS.vk is not None:
+                    for multer in Mult.values():
+                        if multer.status is None:
+                            multer.op =  self.inst[MRS.inst].op
+                            multer.status = MRS.name
+                            multer.vj = MRS.vj
+                            multer.vk = MRS.vk
+                            MRS.remain = Config.TIME[multer.op]
+                            MRS.FU = multer.name
+                            break
 
             n -= 1
 
@@ -127,5 +207,14 @@ if __name__ == '__main__':
         lin = input()
         if lin.lower() == "exit":
             break
-        toma.step(int(lin))
+        elif lin.lower() == "reset":
+            toma.reset()
+        else:
+            toma.step(int(lin))
         print (toma)
+        for loader in Load.values():
+            print (loader)
+        for adder in Add.values():
+            print (adder)
+        for multer in Mult.values():
+            print (multer)

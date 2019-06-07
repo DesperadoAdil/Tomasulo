@@ -12,6 +12,10 @@ class Instruction():
         self.WriteResult = None
         self.rgst_int = []
         for arg in content[1:]:
+            if arg.startswith('0x'):
+                arg = int(arg, 16)
+                if arg >= 2147493648:
+                    arg = ~(0xFFFFFFFF ^ arg)
             self.rgst_int.append(arg)
 
     def __repr__(self):

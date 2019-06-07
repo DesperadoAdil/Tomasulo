@@ -8,12 +8,14 @@ class Config():
     MRS = 3
     LB = 3
 
-    LD = 3
-    JUMP = 1
-    ADD = 3
-    SUB = 3
-    MUL = 12
-    DIV = 40
+    TIME = {
+        'LD': 3,
+        'JUMP': 1,
+        'ADD': 3,
+        'SUB': 3,
+        'MUL': 12,
+        'DIV': 40,
+    }
 
     OP_LD = 'LD'
     OP_JUMP = 'JUMP'
@@ -23,4 +25,3 @@ class Config():
     OP_DIV = 'DIV'
 
     RIGISTER = 32
-    MEMORY = 4096

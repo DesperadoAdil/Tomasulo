@@ -9,10 +9,13 @@ class HardWare():
     vk = None
 
     def free(self):
-        op = None
-        status = None
-        vj = None
-        vk = None
+        self.op = None
+        self.status = None
+        self.vj = None
+        self.vk = None
+
+    def __repr__(self):
+        return '%5r\tSTATUS: %5r\tOP: %5r\tVj: %5r\tVk: %5r' % (self.name, self.status, self.op, self.vj, self.vk)
 
 
 class Adder(HardWare):
@@ -20,42 +23,17 @@ class Adder(HardWare):
     def __init__(self, id):
         self.name = 'Add' + str(id)
 
-    def result(self):
-        if slef.op == Config.OP_ADD:
-            return self.vj + slef.vk
-        elif self.op == Config.OP_SUB:
-            return self.vj - slef.vk
-        else:
-            return None
-
 
 class Multer(HardWare):
 
     def __init__(self, id):
         self.name = 'Mult' + str(id)
 
-    def result(self):
-        if slef.op == Config.OP_MUL:
-            return self.vj * slef.vk
-        elif self.op == Config.OP_DIV:
-            if self.vk != 0:
-                return self.vj / slef.vk
-            else:
-                 return self.vj
-        else:
-            return None
-
 
 class Loader(HardWare):
 
     def __init__(self, id):
         self.name = 'Load' + str(id)
-
-    def result(self):
-        if slef.op == Config.OP_LD:
-            return self.vj
-        else:
-            return None
 
 
 Add = {}
