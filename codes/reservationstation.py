@@ -57,7 +57,7 @@ class ARS(RS):
         self.name = 'ARS' + str(id)
 
     def result(self):
-        if self.op == Config.OP_ADD:
+        if self.op == Config.OP_ADD or self.op == Config.OP_JUMP:
             return self.vj + self.vk
         elif self.op == Config.OP_SUB:
             return self.vj - self.vk
@@ -109,7 +109,7 @@ class ReservationStation():
             for LB in self.LB.values():
                 if LB.busy is False:
                     return LB.name
-        elif inst.op == Config.OP_ADD or inst.op == Config.OP_SUB:
+        elif inst.op == Config.OP_ADD or inst.op == Config.OP_SUB or inst.op == Config.OP_JUMP:
             for ARS in self.ARS.values():
                 if ARS.busy is False:
                     return ARS.name

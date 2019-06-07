@@ -2,8 +2,8 @@
 
 class Register():
 
-    def __init__(self, id):
-        self.name = 'F' + str(id)
+    def __init__(self, name):
+        self.name = name
         self.status = None
         self.value = 0
 
