@@ -181,44 +181,71 @@ class tomasulo():
                     print ('no free RS!')
 
             #EXCUTE HardWare
+            ready = []
             for LB in self.RS.LB.values():
                 if LB.busy is True and LB.FU is None:
-                    for loader in Load.values():
-                        if loader.status is None:
-                            loader.op =  self.inst[LB.inst].op
-                            loader.status = LB.name
-                            loader.vj = LB.im
-                            LB.remain = Config.TIME[loader.op]
-                            LB.FU = loader.name
-                            break
+                    ready.append(LB)
+            ready = sorted(ready, key=lambda x:x.inst)
+            loaderlist = []
+            for loader in Load.values():
+                if loader.status is None:
+                    loaderlist.append(loader)
+            lenth = min(len(ready), len(loaderlist))
+            for i in range(lenth):
+                loader = loaderlist[i]
+                LB = ready[i]
+                loader.op =  self.inst[LB.inst].op
+                loader.status = LB.name
+                loader.vj = LB.im
+                LB.remain = Config.TIME[loader.op]
+                LB.FU = loader.name
 
+            ready = []
             for ARS in self.RS.ARS.values():
                 if ARS.busy is True and ARS.FU is None and ARS.vj is not None and ARS.vk is not None:
-                    for adder in Add.values():
-                        if adder.status is None:
-                            adder.op =  self.inst[ARS.inst].op
-                            adder.status = ARS.name
-                            if adder.op == Config.OP_JUMP:
-                                if ARS.vj != ARS.qk:
-                                    ARS.vk = 1
-                                ARS.vj = self.PC.value
-                            adder.vj = ARS.vj
-                            adder.vk = ARS.vk
-                            ARS.remain = Config.TIME[adder.op]
-                            ARS.FU = adder.name
-                            break
+                    ready.append(ARS)
+            ready = sorted(ready, key=lambda x:x.inst)
+            adderlist = []
+            for adder in Add.values():
+                if adder.status is None:
+                    adderlist.append(adder)
+            lenth = min(len(ready), len(adderlist))
+            for i in range(lenth):
+                adder = adderlist[i]
+                ARS = ready[i]
+                adder.op =  self.inst[ARS.inst].op
+                adder.status = ARS.name
+                if adder.op == Config.OP_JUMP:
+                    if ARS.vj != ARS.qk:
+                        ARS.vk = 1
+                    ARS.vj = self.PC.value
+                adder.vj = ARS.vj
+                adder.vk = ARS.vk
+                ARS.remain = Config.TIME[adder.op]
+                ARS.FU = adder.name
 
+            ready = []
             for MRS in self.RS.MRS.values():
                 if MRS.busy is True and MRS.FU is None and MRS.vj is not None and MRS.vk is not None:
-                    for multer in Mult.values():
-                        if multer.status is None:
-                            multer.op =  self.inst[MRS.inst].op
-                            multer.status = MRS.name
-                            multer.vj = MRS.vj
-                            multer.vk = MRS.vk
-                            MRS.remain = Config.TIME[multer.op]
-                            MRS.FU = multer.name
-                            break
+                    ready.append(MRS)
+            ready = sorted(ready, key=lambda x:x.inst)
+            multerlist = []
+            for multer in Mult.values():
+                if multer.status is None:
+                    multerlist.append(multer)
+            lenth = min(len(ready), len(multerlist))
+            for i in range(lenth):
+                multer = multerlist[i]
+                MRS = ready[i]
+                multer.op =  self.inst[MRS.inst].op
+                multer.status = MRS.name
+                multer.vj = MRS.vj
+                multer.vk = MRS.vk
+                if MRS.op == Config.OP_DIV and MRS.vk == 0:
+                    MRS.remain = 1
+                else:
+                    MRS.remain = Config.TIME[multer.op]
+                MRS.FU = multer.name
 
             n -= 1
 
