@@ -48,7 +48,6 @@ class Tomasulo(QWidget):
         for i in range(len(self.tomasulo.inst)):
             instList.append(str(i))
         self.inst.setVerticalHeaderLabels(instList)
-        #self.inst.verticalHeader().setVisible(False)
         self.inst.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
         self.inst.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self.inst.setSelectionMode(QAbstractItemView.SingleSelection)
@@ -344,7 +343,7 @@ class Tomasulo(QWidget):
         if self.tomasulo.end():
             if self.autobtn.text() == "暂停":
                 self.autobtn.setText("自动运行")
-            self.buttondisable(self.stepbtn, self.stepsbtn, self.autobtn, self.resultbtn)
+            self.buttondisable(self.initbtn, self.stepbtn, self.stepsbtn, self.autobtn, self.resultbtn)
             self.buttonenable(self.resetbtn)
             msg = QMessageBox.information(self, "执行完毕", "Tomasulo模拟器运行完毕！", QMessageBox.Ok, QMessageBox.Ok)
 
@@ -352,7 +351,9 @@ class Tomasulo(QWidget):
         self.tomasulo.reset()
         self.initUI()
         self.clock.display(0)
-        self.buttonenable(self.stepbtn, self.stepsbtn, self.autobtn, self.resultbtn)
+        if self.autobtn.text() == "暂停":
+            self.autobtn.setText("自动运行")
+        self.buttonenable(self.initbtn, self.stepbtn, self.stepsbtn, self.autobtn, self.resultbtn)
 
     def buttondisable(self, *args):
         for arg in args:
