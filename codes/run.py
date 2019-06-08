@@ -3,11 +3,9 @@ import sys, time
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
-#from PyQt5 import QtCore, QtGui, QtWidgets
 
 from tomasulo.tomasulo import Tomasulo as TomasuloCore
 from tomasulo.hardware import Add, Mult, Load
-#from instruction import Instruction as InstructionWidget
 
 class AutoRunThread(QThread):
     refresh = pyqtSignal()
@@ -116,22 +114,35 @@ class Tomasulo(QWidget):
         buttonlayout.addStretch()
         buttonlayout.setSpacing(20)
 
+        instlayout = QVBoxLayout()
+        instlayout.addWidget(QLabel("Instructions"))
+        instlayout.addWidget(self.inst, 1)
+        instlayout.setContentsMargins(20, 0, 0, 20)
+
         rslayout = QVBoxLayout()
+        rslayout.addWidget(QLabel("Load Buffer"))
         rslayout.addWidget(self.LB, 1)
+        rslayout.addWidget(QLabel("Reservation Stations"))
         rslayout.addWidget(self.RS, 4)
+        rslayout.setContentsMargins(20, 0, 0, 20)
 
         tablelayout = QHBoxLayout()
-        tablelayout.addWidget(self.inst, 1)
+        tablelayout.addLayout(instlayout, 1)
         tablelayout.addLayout(rslayout, 2)
+
+        registerlayout = QVBoxLayout()
+        registerlayout.addWidget(QLabel("Registers"))
+        registerlayout.addWidget(self.register, 1)
+        registerlayout.setContentsMargins(20, 0, 0, 20)
 
         mainlayout = QVBoxLayout()
         mainlayout.addLayout(tablelayout, 4)
-        mainlayout.addWidget(self.register, 1)
+        mainlayout.addLayout(registerlayout, 1)
 
         layout = QHBoxLayout(self)
         layout.addLayout(buttonlayout)
         layout.addLayout(mainlayout)
-        layout.setSpacing(20)
+        layout.setContentsMargins(20, 20, 20, 20)
 
         self.show()
 
@@ -182,7 +193,7 @@ class Tomasulo(QWidget):
         self.resetbtn.clicked.connect(self.reset)
 
     def initData(self):
-        with open('static/test/test2.nel', encoding = 'utf8') as f:
+        with open('static/test/test0.nel', encoding = 'utf8') as f:
             for line in f.readlines():
                 if len(line) <= 3:
                     continue
