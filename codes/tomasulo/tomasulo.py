@@ -1,11 +1,11 @@
 # -*- coding: UTF-8 -*-
-from config import Config
-from instruction import Instruction
-from register import Register
-from reservationstation import ReservationStation as RS
-from hardware import Add, Mult, Load
+from .config import Config
+from .instruction import Instruction
+from .register import Register
+from .reservationstation import ReservationStation as RS
+from .hardware import Add, Mult, Load
 
-class tomasulo():
+class Tomasulo():
 
     def __init__(self):
         self.clock = 0
@@ -15,7 +15,6 @@ class tomasulo():
         self.register = {}
         for i in range(Config.RIGISTER):
             self.register['F'+str(i)] = Register('F'+str(i))
-        print ("tomasulo!")
 
     def __repr__(self):
         for inst in self.inst:
@@ -49,7 +48,7 @@ class tomasulo():
         for multer in Mult.values():
             multer.free()
 
-    def step(self, n):
+    def step(self, n=1):
         while n > 0:
             self.clock += 1
 
@@ -248,29 +247,3 @@ class tomasulo():
                 MRS.FU = multer.name
 
             n -= 1
-
-
-if __name__ == '__main__':
-    toma = tomasulo()
-
-    with open('samp.txt', encoding = 'utf8') as f:
-        for line in f.readlines():
-            toma.insert_inst(line)
-    print (toma)
-
-    while True:
-        for loader in Load.values():
-            print (loader)
-        for adder in Add.values():
-            print (adder)
-        for multer in Mult.values():
-            print (multer)
-
-        lin = input()
-        if lin.lower() == "exit":
-            break
-        elif lin.lower() == "reset":
-            toma.reset()
-        else:
-            toma.step(int(lin))
-        print (toma)
