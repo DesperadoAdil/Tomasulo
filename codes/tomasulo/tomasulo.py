@@ -126,7 +126,6 @@ class Tomasulo():
                 inst = self.inst[self.PC.value]
                 res = self.RS.busy(inst)
                 if res is not None:
-                    print ('%s free to go!' % inst.content)
                     if inst.Issue is None:
                         inst.Issue = self.clock
                         if inst.op == Config.OP_LD:
@@ -191,7 +190,7 @@ class Tomasulo():
                     if inst.op != Config.OP_JUMP:
                         self.PC.value += 1
                 else:
-                    print ('no free RS!')
+                    pass
 
             #EXCUTE HardWare
             ready = []

@@ -106,6 +106,7 @@ class Tomasulo(QWidget):
         self.autostop.connect(self.autorunthread.stop)
 
         buttonlayout = QVBoxLayout()
+        buttonlayout.addWidget(self.initbtn)
         buttonlayout.addWidget(self.clocklbl)
         buttonlayout.addWidget(self.clock)
         buttonlayout.addWidget(self.stepbtn)
@@ -150,6 +151,10 @@ class Tomasulo(QWidget):
         QToolTip.setFont(QFont('SansSerif', 10))
 
     def initButton(self):
+        self.initbtn = QPushButton("输入指令", self)
+        self.initbtn.setToolTip("输入指令")
+        self.initbtn.clicked.connect(self.initdialog)
+
         self.clocklbl = QLabel("时钟周期：", self)
         self.clock = QLCDNumber(self)
         self.clock.setSegmentStyle(QLCDNumber.Flat)
@@ -178,7 +183,7 @@ class Tomasulo(QWidget):
         self.resetbtn.clicked.connect(self.reset)
 
     def initData(self):
-        with open('static/test/test0.nel', encoding = 'utf8') as f:
+        with open('static/test/test2.nel', encoding = 'utf8') as f:
             for line in f.readlines():
                 if len(line) <= 3:
                     continue
@@ -313,12 +318,12 @@ class Tomasulo(QWidget):
     def autorun(self):
         if self.autobtn.text() == "自动运行":
             self.autobtn.setText("暂停")
-            self.buttondisable(self.stepbtn, self.stepsbtn, self.resultbtn, self.resetbtn)
+            self.buttondisable(self.initbtn, self.stepbtn, self.stepsbtn, self.resultbtn, self.resetbtn)
             self.autorunthread.auto = True
             self.autorunthread.start()
         elif self.autobtn.text() == "暂停":
             self.autobtn.setText("自动运行")
-            self.buttonenable(self.stepbtn, self.stepsbtn, self.resultbtn, self.resetbtn)
+            self.buttonenable(self.initbtn, self.stepbtn, self.stepsbtn, self.resultbtn, self.resetbtn)
             self.autostop.emit()
 
 
@@ -337,6 +342,8 @@ class Tomasulo(QWidget):
         self.initUI()
         self.clock.display(self.tomasulo.clock)
         if self.tomasulo.end():
+            if self.autobtn.text() == "暂停":
+                self.autobtn.setText("自动运行")
             self.buttondisable(self.stepbtn, self.stepsbtn, self.autobtn, self.resultbtn)
             self.buttonenable(self.resetbtn)
             msg = QMessageBox.information(self, "执行完毕", "Tomasulo模拟器运行完毕！", QMessageBox.Ok, QMessageBox.Ok)
@@ -357,7 +364,7 @@ class Tomasulo(QWidget):
 
     def stepsdialog(self):
         dialog = QDialog()
-        dialog.setWindowTitle("请输入执行步数 ")
+        dialog.setWindowTitle("请输入执行步数")
         dialog.setWindowModality(Qt.ApplicationModal)
         line = QLineEdit(dialog)
         line.setAlignment(Qt.AlignLeft)
@@ -376,8 +383,49 @@ class Tomasulo(QWidget):
 
         dialog.exec_()
 
+    def initdialog(self):
+        dialog = QDialog()
+        dialog.setWindowTitle("请输入指令")
+        dialog.setWindowModality(Qt.ApplicationModal)
+        text = QTextEdit(dialog)
+        filebtn = QPushButton("从文件导入", dialog)
+        btn = QPushButton("确定", dialog)
+
+        def showfiledialog():
+            fname = QFileDialog.getOpenFileName(self, "打开文件")
+            if fname[0]:
+                with open(fname[0], 'r') as f:
+                    data = f.read()
+                    text.setPlainText(data)
+        filebtn.clicked.connect(showfiledialog)
+
+        def btnclicked():
+            lines = text.toPlainText().strip().split('\n')
+            if len(lines) > 0:
+                self.tomasulo.inst.clear()
+                self.inst.clearContents()
+                for line in lines:
+                    line.strip()
+                    if len(line) <= 3:
+                        continue
+                    self.tomasulo.insert_inst(line)
+                self.reset()
+            dialog.close()
+        btn.clicked.connect(btnclicked)
+
+        buttonlayout = QHBoxLayout()
+        buttonlayout.addWidget(filebtn)
+        buttonlayout.addStretch()
+        buttonlayout.addWidget(btn)
+
+        layout = QVBoxLayout(dialog)
+        layout.addWidget(text)
+        layout.addLayout(buttonlayout)
+
+        dialog.exec_()
+
     def closeEvent(self, event):
-        reply = QMessageBox.question(self, 'Message', "Are you sure to quit?", QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
+        reply = QMessageBox.question(self, '退出', "是否退出模拟器?", QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
         if reply == QMessageBox.Yes:
             event.accept()
         else:
