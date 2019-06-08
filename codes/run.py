@@ -7,6 +7,17 @@ from PyQt5.QtCore import *
 from tomasulo.tomasulo import Tomasulo as TomasuloCore
 from tomasulo.hardware import Add, Mult, Load
 
+initial = [
+    "LD,F1,0x2",
+    "LD,F2,0x1",
+    "LD,F3,0xFFFFFFFF",
+    "SUB,F1,F1,F2",
+    "DIV,F4,F3,F1",
+    "JUMP,0x0,F1,0x2",
+    "JUMP,0xFFFFFFFF,F3,0xFFFFFFFD",
+    "MUL,F3,F1,F4"
+]
+
 class AutoRunThread(QThread):
     refresh = pyqtSignal()
 
@@ -193,11 +204,8 @@ class Tomasulo(QWidget):
         self.resetbtn.clicked.connect(self.reset)
 
     def initData(self):
-        with open('static/test/test0.nel', encoding = 'utf8') as f:
-            for line in f.readlines():
-                if len(line) <= 3:
-                    continue
-                self.tomasulo.insert_inst(line)
+        for line in initial:
+            self.tomasulo.insert_inst(line)
 
     def initInst(self):
         i = 0
@@ -451,9 +459,8 @@ if __name__ == '__main__':
         sys.exit(app.exec_())
     elif len(sys.argv) == 2 and sys.argv[1].lower() == 'core':
         toma = TomasuloCore()
-        with open('static/test/test0.nel', encoding = 'utf8') as f:
-            for line in f.readlines():
-                toma.insert_inst(line)
+        for line in initial:
+            toma.insert_inst(line)
         print (toma)
         while True:
             for loader in Load.values():
