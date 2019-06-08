@@ -7,6 +7,7 @@ class Instruction():
         self.content = content
         content = content.split(',')
         self.op = content[0]
+        self.rs = None
         self.Issue = None
         self.ExecComp = None
         self.WriteResult = None
@@ -19,4 +20,9 @@ class Instruction():
             self.rgst_int.append(arg)
 
     def __repr__(self):
-        return '%40r\tIssue: %5r\tExec Comp: %5r\tWrite Result: %5r' % (self.content, self.Issue, self.ExecComp, self.WriteResult)
+        return '%40r\tIssue: %5r\tExec Comp: %5r\tWrite Result: %5r\tRS: %s' % (self.content, self.Issue, self.ExecComp, self.WriteResult, self.rs)
+
+    def free(self):
+        self.Issue = None
+        self.ExecComp = None
+        self.WriteResult = None

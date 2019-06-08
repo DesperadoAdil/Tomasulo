@@ -31,6 +31,9 @@ class Tomasulo():
     def reset(self):
         self.clock = 0
         self.PC.free()
+        for inst in self.inst:
+            inst.free()
+
         for LB in self.RS.LB.values():
             LB.free()
         for ARS in self.RS.ARS.values():
@@ -48,6 +51,9 @@ class Tomasulo():
         for multer in Mult.values():
             multer.free()
 
+    def end(self):
+        return self.PC.value >= len(self.inst) and self.RS.isfree()
+
     def step(self, n=1):
         while n > 0:
             self.clock += 1
@@ -55,7 +61,7 @@ class Tomasulo():
             #WRITEBACK
             for LB in self.RS.LB.values():
                 if LB.busy is True and LB.remain == 0:
-                    if self.inst[LB.inst].WriteResult is None:
+                    if self.inst[LB.inst].WriteResult is None and self.inst[LB.inst].rs == LB.name:
                         self.inst[LB.inst].WriteResult = self.clock
                     for register in self.register.values():
                         if register.status == LB.name:
@@ -66,7 +72,7 @@ class Tomasulo():
 
             for ARS in self.RS.ARS.values():
                 if ARS.busy is True and ARS.remain == 0:
-                    if self.inst[ARS.inst].WriteResult is None:
+                    if self.inst[ARS.inst].WriteResult is None and self.inst[ARS.inst].rs == ARS.name:
                         self.inst[ARS.inst].WriteResult = self.clock
                     if ARS.op != Config.OP_JUMP:
                         for register in self.register.values():
@@ -81,7 +87,7 @@ class Tomasulo():
 
             for MRS in self.RS.MRS.values():
                 if MRS.busy is True and MRS.remain == 0:
-                    if self.inst[MRS.inst].WriteResult is None:
+                    if self.inst[MRS.inst].WriteResult is None and self.inst[MRS.inst].rs == MRS.name:
                         self.inst[MRS.inst].WriteResult = self.clock
                     for register in self.register.values():
                         if register.status == MRS.name:
@@ -95,7 +101,7 @@ class Tomasulo():
                 if LB.busy is True and LB.remain is not None:
                     LB.remain -= 1
                     if LB.remain == 0:
-                        if self.inst[LB.inst].ExecComp is None:
+                        if self.inst[LB.inst].ExecComp is None and self.inst[LB.inst].rs == LB.name:
                             self.inst[LB.inst].ExecComp = self.clock
                         Load[LB.FU].free()
 
@@ -103,7 +109,7 @@ class Tomasulo():
                 if ARS.busy is True and ARS.remain is not None:
                     ARS.remain -= 1
                     if ARS.remain == 0:
-                        if self.inst[ARS.inst].ExecComp is None:
+                        if self.inst[ARS.inst].ExecComp is None and self.inst[ARS.inst].rs == ARS.name:
                             self.inst[ARS.inst].ExecComp = self.clock
                         Add[ARS.FU].free()
 
@@ -111,7 +117,7 @@ class Tomasulo():
                 if MRS.busy is True and MRS.remain is not None:
                     MRS.remain -= 1
                     if MRS.remain == 0:
-                        if self.inst[MRS.inst].ExecComp is None:
+                        if self.inst[MRS.inst].ExecComp is None and self.inst[MRS.inst].rs == MRS.name:
                             self.inst[MRS.inst].ExecComp = self.clock
                         Mult[MRS.FU].free()
 
@@ -123,6 +129,14 @@ class Tomasulo():
                     print ('%s free to go!' % inst.content)
                     if inst.Issue is None:
                         inst.Issue = self.clock
+                        if inst.op == Config.OP_LD:
+                            inst.rs = self.RS.LB[res].name
+                        elif inst.op == Config.OP_ADD or inst.op == Config.OP_SUB or inst.op == Config.OP_JUMP:
+                            inst.rs = self.RS.ARS[res].name
+                        elif inst.op == Config.OP_MUL or inst.op == Config.OP_DIV:
+                            inst.rs = self.RS.MRS[res].name
+                        else:
+                            return
 
                     if inst.op == Config.OP_LD:
                         self.RS.LB[res].busy = True

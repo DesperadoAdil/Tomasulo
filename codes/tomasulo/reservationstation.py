@@ -136,3 +136,15 @@ class ReservationStation():
             if MRS.qk == name:
                 MRS.qk = None
                 MRS.vk = value
+
+    def isfree(self):
+        for LB in self.LB.values():
+            if LB.busy:
+                return False
+        for ARS in self.ARS.values():
+            if ARS.busy:
+                return False
+        for MRS in self.MRS.values():
+            if MRS.busy:
+                return False
+        return True
