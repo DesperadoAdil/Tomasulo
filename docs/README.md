@@ -137,3 +137,8 @@
         `python run.py` 或 `python run.py gui`
 - 运行Release版本：
     进入release/dist文件夹运行run.exe
+
+## 测试
+- 测试样例在codes/static/test文件夹中，其中test0.nel为test2.nel为官方测例，剩下的为自己编写的测例，均通过了测试
+- 其中test3.nel和test4.nel是综合测试，test5.nel为JUMP测试，实现0到0x10的循环
+- 测试结果均正确
