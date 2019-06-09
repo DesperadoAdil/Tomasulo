@@ -111,5 +111,33 @@
 ## UI说明
 - 界面
     ![ui](ui.png)
+- 按钮
+    - 输入指令
+        输入框输入指令，或者从文件导入
+        ![init](init.png)
+    - 单步/多步执行
+        单步调试或者输入需要执行的步数来调试
+    - 自动运行
+        自动运行模拟器，每秒运行一步直到结束，期间自动运行按钮变为暂停按钮，其他按钮不可用
+        ![autorun](autorun.png)
+    - 运行直到结束
+        运行模拟器直到所有指令运行结束
+        ![end](end.png)
+        此时只有清除按钮可用，其他按钮不可用
+        ![result](result.png)
+    - 清除
+        清空记录，重置模拟器
+
+- 指令部分
+- 保留站
+- 寄存器
 
 ## 部署运行
+- 编译运行
+    模拟器使用Python3.6编写，GUI采用PyQt5，编译运行需要先安装Python3.6以及PyQt5的相关库，命令行进入codes文件夹：
+    - 运行命令行界面
+        `python run.py core`
+    - 运行GUI
+        `python run.py` 或 `python run.py gui`
+- 运行Release版本：
+    进入release/dist文件夹运行run.exe
