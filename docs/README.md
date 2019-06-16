@@ -112,21 +112,21 @@
 
 ## UI说明
 - 界面
-    ![ui](ui.png)
+    ![ui](./ui.png)
 - 按钮
     - 输入指令
         输入框输入指令，或者从文件导入  
-        ![init](init.png)  
+        ![init](./init.png)  
     - 单步/多步执行
         单步调试或者输入需要执行的步数来调试  
     - 自动运行
         自动运行模拟器，每秒运行一步直到结束，期间自动运行按钮变为暂停按钮，其他按钮不可用  
-        ![autorun](autorun.png)  
+        ![autorun](./autorun.png)  
     - 运行直到结束
         运行模拟器直到所有指令运行结束  
-        ![end](end.png)  
+        ![end](./end.png)  
         此时只有清除按钮可用，其他按钮不可用  
-        ![result](result.png)  
+        ![result](./result.png)  
     - 清除
         清空记录，重置模拟器  
 
