@@ -54,7 +54,7 @@ class Tomasulo(QWidget):
         self.inst.setColumnCount(4)
         self.inst.setHorizontalHeaderLabels(["指令", "发射周期", "执行完毕", "写回结果"])
         instList = []
-        for i in range(len(self.tomasulo.inst)):
+        for i in range(1000):
             instList.append(str(i))
         self.inst.setVerticalHeaderLabels(instList)
         self.inst.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
